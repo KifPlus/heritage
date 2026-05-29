@@ -3,351 +3,623 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Heritage Tobacco | Live Editable Dashboard | Export to UAE & KSA</title>
+    <title>Heritage Tobacco | Live Financial Dashboard</title>
+    <!-- Chart.js for live charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome 6 (free) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Font: Inter + fallback -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(145deg, #f0f4f2 0%, #e2e8e5 100%);
-            padding: 40px 28px;
-            color: #1a2e28;
+            background: #f2efe7;
+            background-image: radial-gradient(circle at 10% 20%, rgba(200, 180, 140, 0.08) 2%, transparent 2.5%);
+            background-size: 28px 28px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            padding: 2rem 1.8rem;
+            color: #1f2c28;
         }
-        .container { max-width: 1500px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+        /* custom vintage palette: dark olive, clay, sand */
+        :root {
+            --primary-dark: #2a4b3c;
+            --primary-light: #3f6b58;
+            --accent: #c57f4a;
+            --accent-light: #e0a87a;
+            --cream: #fef7e8;
+            --sand: #e6dbc9;
+            --shadow-sm: 0 12px 28px -8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 24px 42px -12px rgba(0, 0, 0, 0.2);
+        }
+
+        .dashboard {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* card animations */
         .card {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 36px;
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12);
+            background: var(--cream);
+            border-radius: 2rem;
+            box-shadow: var(--shadow-sm);
             overflow: hidden;
-            transition: transform 0.2s ease;
-            border: 1px solid rgba(226, 184, 122, 0.2);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid rgba(197, 127, 74, 0.2);
+            animation: slideUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(24px);
         }
-        .card:hover { transform: translateY(-2px); }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* staggered delays */
+        .card:nth-child(1) { animation-delay: 0.05s; }
+        .card:nth-child(2) { animation-delay: 0.12s; }
+        .card:nth-child(3) { animation-delay: 0.19s; }
+        .card:nth-child(4) { animation-delay: 0.26s; }
+        .card:nth-child(5) { animation-delay: 0.33s; }
+        .card:nth-child(6) { animation-delay: 0.40s; }
+        .card:nth-child(7) { animation-delay: 0.47s; }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
         .card-header {
-            padding: 22px 32px;
-            background: linear-gradient(115deg, #1e3f33 0%, #2a5a46 100%);
+            background: linear-gradient(105deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            padding: 1.2rem 2rem;
             color: white;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 0.8rem;
         }
-        .card-header h2 { font-weight: 700; font-size: 1.6rem; display: flex; align-items: center; gap: 12px; }
-        .badge-premium { background: #e2b87a; color: #1e3f33; padding: 6px 18px; border-radius: 60px; font-size: 0.75rem; font-weight: 700; }
-        .badge-editable { background: rgba(226, 184, 122, 0.2); border: 1px dashed #e2b87a; color: #e2b87a; padding: 4px 12px; border-radius: 60px; font-size: 0.7rem; }
-        .card-body { padding: 28px 32px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #ece2d4; }
-        th { background: #f9f5ef; font-weight: 700; color: #2a5a46; font-size: 0.85rem; }
-        .editable-number {
-            background: #fef9ef; border: 1px solid #e2b87a; border-radius: 12px; padding: 6px 10px;
-            min-width: 110px; display: inline-block; cursor: text; font-weight: 600;
-            font-family: 'Inter', monospace; font-size: 0.9rem; color: #c47a44; text-align: center;
+
+        .card-header h2 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
-        .editable-number:focus { background: #fff; border-color: #c47a44; outline: none; box-shadow: 0 0 0 3px rgba(196,122,68,0.15); }
-        .stat-number { font-weight: 800; background: #eef3f0; padding: 8px 20px; border-radius: 50px; display: inline-block; font-size: 0.9rem; }
-        .flex-stat { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-top: 25px; }
-        .product-grid { display: flex; flex-wrap: wrap; gap: 30px; margin-top: 15px; }
-        .product-card { flex: 1; min-width: 280px; background: #fefcf7; border-radius: 28px; padding: 26px; border: 1px solid #efe3d4; }
-        .product-card h3 { font-size: 1.4rem; margin-bottom: 20px; color: #2a5a46; border-left: 4px solid #e2b87a; padding-left: 16px; }
-        .hr-light { margin: 20px 0; border: none; height: 1px; background: linear-gradient(90deg, #e2b87a, transparent); }
-        .footer-note { text-align: center; font-size: 0.72rem; color: #8ba39a; margin-top: 20px; padding-top: 12px; border-top: 1px solid #e2d5c4; }
-        .made-by { text-align: center; font-size: 0.85rem; color: #8ba39a; margin-top: 20px; letter-spacing: 0.8px; font-family: monospace; padding: 16px 0 8px; border-top: 1px solid rgba(226, 184, 122, 0.3); }
-        button { background: #2a5a46; border: none; color: white; font-weight: 600; padding: 8px 20px; border-radius: 40px; cursor: pointer; transition: 0.2s; font-size: 0.8rem; }
-        button:hover { background: #c47a44; transform: translateY(-2px); }
-        .chart-container { display: flex; flex-wrap: wrap; gap: 30px; margin-top: 20px; }
-        .chart-box { flex: 1; min-width: 250px; }
-        @media (max-width: 750px) { .card-body { padding: 18px; } th, td { font-size: 0.7rem; } .editable-number { min-width: 80px; } }
-        .save-indicator { position: fixed; bottom: 20px; right: 20px; background: #2a5a46; color: white; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+
+        .card-header h2 i {
+            color: var(--accent-light);
+        }
+
+        .badge {
+            background: var(--accent);
+            color: #1f2c28;
+            padding: 0.3rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: 0.15s;
+        }
+
+        .badge-editable {
+            background: rgba(224, 168, 122, 0.2);
+            border: 1px dashed var(--accent-light);
+            color: var(--accent-light);
+            padding: 0.25rem 1rem;
+            border-radius: 3rem;
+            font-size: 0.7rem;
+        }
+
+        .card-body {
+            padding: 1.8rem 2rem;
+        }
+
+        /* tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.85rem 0.7rem;
+            text-align: left;
+            border-bottom: 1px solid #e2d8ca;
+        }
+
+        .data-table th {
+            background: #f6f0e6;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 0.8rem;
+        }
+
+        /* editable numbers */
+        .editable-num {
+            background: #fff6ea;
+            border: 1px solid var(--accent);
+            border-radius: 1rem;
+            padding: 0.3rem 0.7rem;
+            min-width: 100px;
+            display: inline-block;
+            cursor: text;
+            font-weight: 600;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #b45f2c;
+            text-align: center;
+            transition: 0.1s;
+        }
+
+        .editable-num:focus {
+            background: white;
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(197, 127, 74, 0.2);
+        }
+
+        .stat-pill {
+            background: #eae2d4;
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 800;
+            display: inline-block;
+            font-size: 0.85rem;
+        }
+
+        .flex-stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .product-duo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+
+        .product-card {
+            flex: 1;
+            background: #fffaf2;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid #ebdfcf;
+            transition: 0.2s;
+        }
+
+        .product-card:hover {
+            transform: scale(0.98);
+            background: #fff5e8;
+        }
+
+        .hr-divider {
+            margin: 1.5rem 0;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, var(--accent-light), transparent);
+        }
+
+        .inline-rate {
+            background: #f0e7db;
+            border-radius: 2rem;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.7rem;
+        }
+
+        button {
+            background: var(--primary-dark);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.75rem;
+        }
+
+        button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #8a7f6e;
+            margin-top: 1.2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e6d8c6;
+        }
+
+        .chart-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .chart-box {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .saved-toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: #2a4b3c;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 0px rgba(197,127,74,0); }
+            100% { text-shadow: 0 0 6px rgba(197,127,74,0.5); }
+        }
+        .editable-num:hover {
+            animation: pulseGlow 0.8s ease;
+        }
+
+        @media (max-width: 780px) {
+            body { padding: 1rem; }
+            .card-body { padding: 1.2rem; }
+            .card-header h2 { font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="dashboard">
+    <!-- header card -->
     <div class="card">
         <div class="card-header">
-            <h2><i class="fas fa-leaf"></i> <span contenteditable="true" id="brand">Heritage Tobacco</span></h2>
-            <div><span class="badge-premium"><i class="fas fa-calendar-week"></i> 12 Months Runway</span><span class="badge-premium"><i class="fas fa-user-circle"></i> CEO: <span contenteditable="true" id="ceo">MS</span></span><span class="badge-editable"><i class="fas fa-edit"></i> Click any number to edit</span></div>
+            <h2><i class="fas fa-leaf"></i> <span contenteditable="true" id="brandName">Heritage Tobacco</span></h2>
+            <div style="display: flex; gap: 0.6rem;">
+                <span class="badge"><i class="fas fa-calendar-week"></i> 12M Runway</span>
+                <span class="badge-editable"><i class="fas fa-edit"></i> edit any number</span>
+            </div>
         </div>
-        <div class="card-body" style="text-align:center"><p contenteditable="true">India Manufacturing → Export to UAE & KSA</p><div style="margin-top:16px"><span class="conversion-chip"><i class="fas fa-rupee-sign"></i> INR Base</span><span class="conversion-chip"><i class="fas fa-exchange-alt"></i> 1 AED = <span id="aedRate" contenteditable="true" style="background:#fff3e6; border:none; font-weight:800; width:55px; display:inline-block;">26.10</span> INR</span><span class="conversion-chip"><i class="fas fa-exchange-alt"></i> 1 SAR = <span id="sarRate" contenteditable="true" style="background:#fff3e6; border:none; font-weight:800; width:55px; display:inline-block;">25.30</span> INR</span></div></div>
+        <div class="card-body" style="text-align: center;">
+            <p contenteditable="true" style="font-weight: 500;">🇮🇳 India Manufacture → Export to UAE & KSA</p>
+            <div style="margin-top: 1.2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <span class="inline-rate"><i class="fas fa-rupee-sign"></i> INR base</span>
+                <span class="inline-rate"><i class="fas fa-exchange-alt"></i> 1 AED = <span id="aedRate" contenteditable="true" style="background:transparent; border:none; font-weight:800; width:55px; display:inline-block;">26.10</span> INR</span>
+                <span class="inline-rate"><i class="fas fa-exchange-alt"></i> 1 SAR = <span id="sarRate" contenteditable="true" style="background:transparent; border:none; font-weight:800; width:55px; display:inline-block;">25.30</span> INR</span>
+            </div>
+        </div>
     </div>
 
-    <!-- INDIA MANUFACTURING (updated: skilled labor 44000 total for 2, single floor manager 25000) -->
+    <!-- India Manufacturing Table (recurring + one‑time) -->
     <div class="card">
-        <div class="card-header"><h2><i class="fas fa-industry"></i> India Manufacturing & Operations</h2><span class="badge-premium">Monthly ×12 → annual</span></div>
+        <div class="card-header">
+            <h2><i class="fas fa-industry"></i> India Operations (Navi Mumbai)</h2>
+            <span class="badge">monthly ×12 → annual</span>
+        </div>
         <div class="card-body">
-            <table id="indiaTable">
-                <thead><tr><th>Component</th><th>Monthly Amount (₹)</th><th>Annual Total (₹)</th><th>Notes</th></tr></thead>
+            <table class="data-table" id="indiaTable">
+                <thead><tr><th>Component</th><th>Monthly (₹)</th><th>Annual (₹)</th><th>Notes</th></tr></thead>
                 <tbody>
-                    <tr style="background:#f9f5ef;"><td colspan="4"><strong>Factory & Admin</strong></td></tr>
-                    <tr><td>Factory Rent (8,000 sq ft Navi Mumbai)</td><td><span contenteditable="true" class="editable-number" data-india="0">100000</span></td><td class="india-annual" id="indiaAnnual0">-</td><td>Per month</td></tr>
-                    <tr><td>Electricity (3-phase industrial)</td><td><span contenteditable="true" class="editable-number" data-india="1">15000</span></td><td class="india-annual" id="indiaAnnual1">-</td><td>High usage</td></tr>
-                    <tr><td>Water & Utilities</td><td><span contenteditable="true" class="editable-number" data-india="2">5000</span></td><td class="india-annual" id="indiaAnnual2">-</td><td></td></tr>
-                    <tr style="background:#f9f5ef;"><td colspan="4"><strong>Labor (India)</strong></td></tr>
-                    <tr><td>Unskilled Labor (8 workers)</td><td><span contenteditable="true" class="editable-number" data-india="3">144000</span></td><td class="india-annual" id="indiaAnnual3">-</td><td>₹18,000/worker/month</td></tr>
-                    <tr><td>Skilled Labor (2 persons, ₹22,000 each)</td><td><span contenteditable="true" class="editable-number" data-india="4">44000</span></td><td class="india-annual" id="indiaAnnual4">-</td><td>₹22,000 per person</td></tr>
-                    <tr><td>Floor Manager (1)</td><td><span contenteditable="true" class="editable-number" data-india="5">25000</span></td><td class="india-annual" id="indiaAnnual5">-</td><td>Single manager</td></tr>
-                    <tr><td>CEO (India)</td><td><span contenteditable="true" class="editable-number" data-india="6">120000</span></td><td class="india-annual" id="indiaAnnual6">-</td><td>Global oversight</td></tr>
-                    <tr style="background:#f9f5ef;"><td colspan="4"><strong>One-time Setup</strong></td></tr>
-                    <tr><td>Licenses & Approvals</td><td><span contenteditable="true" class="editable-number" data-india-onetime="0">300000</span></td><td class="india-onetime-annual" id="indiaOT0">-</td><td>One-time</td></tr>
-                    <tr><td>Factory Interior & Civil</td><td><span contenteditable="true" class="editable-number" data-india-onetime="1">2500000</span></td><td class="india-onetime-annual" id="indiaOT1">-</td><td>One-time</td></tr>
-                    <tr><td>Machinery (Both lines)</td><td><span contenteditable="true" class="editable-number" data-india-onetime="2">3000000</span></td><td class="india-onetime-annual" id="indiaOT2">-</td><td>One-time</td></tr>
-                    <tr><td>Misc Setup (Office, IT, etc)</td><td><span contenteditable="true" class="editable-number" data-india-onetime="3">300000</span></td><td class="india-onetime-annual" id="indiaOT3">-</td><td>One-time</td></tr>
+                    <tr style="background:#f6efe6;"><td colspan="4"><strong>🏭 Factory & Admin</strong></td></tr>
+                    <tr><td>Factory Rent (8k sqft)</td><td><span contenteditable="true" class="editable-num" data-india="0">100000</span></td><td class="india-annual" id="indiaAnn0">-</td><td>Navi Mumbai</td></tr>
+                    <tr><td>Electricity (3‑phase)</td><td><span contenteditable="true" class="editable-num" data-india="1">15000</span></td><td class="india-annual" id="indiaAnn1">-</td><td>heavy usage</td></tr>
+                    <tr><td>Water & Utilities</td><td><span contenteditable="true" class="editable-num" data-india="2">5000</span></td><td class="india-annual" id="indiaAnn2">-</td><td></td></tr>
+                    <tr style="background:#f6efe6;"><td colspan="4"><strong>👥 Labor (India)</strong></td></tr>
+                    <tr><td>Unskilled (8 workers)</td><td><span contenteditable="true" class="editable-num" data-india="3">144000</span></td><td class="india-annual" id="indiaAnn3">-</td><td>₹18k each</td></tr>
+                    <tr><td>Skilled (2 persons, ₹22k each)</td><td><span contenteditable="true" class="editable-num" data-india="4">44000</span></td><td class="india-annual" id="indiaAnn4">-</td><td>machine ops</td></tr>
+                    <tr><td>Floor Manager (1)</td><td><span contenteditable="true" class="editable-num" data-india="5">25000</span></td><td class="india-annual" id="indiaAnn5">-</td><td>production</td></tr>
+                    <tr><td>CEO (India)</td><td><span contenteditable="true" class="editable-num" data-india="6">120000</span></td><td class="india-annual" id="indiaAnn6">-</td><td>global oversight</td></tr>
+                    <tr style="background:#f6efe6;"><td colspan="4"><strong>🔧 One‑time Setup</strong></td></tr>
+                    <tr><td>Licenses & Approvals</td><td><span contenteditable="true" class="editable-num" data-india-onetime="0">300000</span></td><td class="india-ot" id="indiaOt0">-</td><td>one‑time</td></tr>
+                    <tr><td>Factory Interior & Civil</td><td><span contenteditable="true" class="editable-num" data-india-onetime="1">2500000</span></td><td class="india-ot" id="indiaOt1">-</td><td>one‑time</td></tr>
+                    <tr><td>Machinery (both lines)</td><td><span contenteditable="true" class="editable-num" data-india-onetime="2">3000000</span></td><td class="india-ot" id="indiaOt2">-</td><td>one‑time</td></tr>
+                    <tr><td>Misc Setup (office, IT)</td><td><span contenteditable="true" class="editable-num" data-india-onetime="3">300000</span></td><td class="india-ot" id="indiaOt3">-</td><td>one‑time</td></tr>
                 </tbody>
             </table>
-            <div class="flex-stat">
-                <div><strong>🏭 One-time Capex (India):</strong> <span id="indiaOneTimeSum" class="stat-number">₹0</span></div>
-                <div><strong>🔄 Recurring Monthly (India ops):</strong> <span id="indiaMonthlyRecurring" class="stat-number">₹0</span></div>
-                <div><strong>📆 Annual Recurring (India):</strong> <span id="indiaAnnualRecurring" class="stat-number">₹0</span></div>
-                <button id="resetIndiaBtn"><i class="fas fa-undo-alt"></i> Reset India</button>
+            <div class="flex-stats">
+                <div><strong>🏭 One‑time Capex:</strong> <span id="indiaCapexSum" class="stat-pill">₹0</span></div>
+                <div><strong>🔄 Monthly recur:</strong> <span id="indiaMonthlyRecur" class="stat-pill">₹0</span></div>
+                <div><strong>📆 Annual recur:</strong> <span id="indiaAnnualRecur" class="stat-pill">₹0</span></div>
+                <button id="resetIndiaBtn"><i class="fas fa-undo-alt"></i> reset India</button>
             </div>
         </div>
     </div>
 
-    <!-- PRODUCT ECONOMICS -->
+    <!-- Product Economics (editable prices) -->
     <div class="card">
-        <div class="card-header"><h2><i class="fas fa-chart-simple"></i> Product Economics (Ex-works India)</h2><span class="badge-premium">Edit prices → Profit/kg updates</span></div>
+        <div class="card-header"><h2><i class="fas fa-chart-line"></i> Product Economics (ex‑works)</h2><span class="badge">profit/kg auto</span></div>
         <div class="card-body">
-            <div class="product-grid">
-                <div class="product-card"><h3><i class="fas fa-tobacco"></i> Pandarpuri</h3><div><strong>Manufacturing Cost:</strong> <span contenteditable="true" id="ppCost" class="editable-number">523</span> ₹/kg</div><div><strong>Export Price (FOB):</strong> <span contenteditable="true" id="ppPrice" class="editable-number">836</span> ₹/kg</div><div><strong style="color:#c47a44;">Net Profit/kg:</strong> <span id="ppProfit">313.00</span> ₹</div></div>
-                <div class="product-card"><h3><i class="fas fa-water"></i> Shisha Flavors</h3><div><strong>Manufacturing Cost:</strong> <span contenteditable="true" id="shCost" class="editable-number">350</span> ₹/kg</div><div><strong>Export Price (FOB):</strong> <span contenteditable="true" id="shPrice" class="editable-number">750</span> ₹/kg</div><div><strong style="color:#c47a44;">Net Profit/kg:</strong> <span id="shProfit">400.00</span> ₹</div></div>
+            <div class="product-duo">
+                <div class="product-card"><h3><i class="fas fa-tobacco"></i> Pandarpuri</h3><div>Manufacturing: <span contenteditable="true" id="ppCost" class="editable-num">523</span> ₹/kg</div><div>FOB Price: <span contenteditable="true" id="ppPrice" class="editable-num">836</span> ₹/kg</div><div><strong style="color:#c57f4a;">Net profit/kg:</strong> <span id="ppProfitSpan">313.00</span> ₹</div></div>
+                <div class="product-card"><h3><i class="fas fa-water"></i> Shisha Flavors</h3><div>Manufacturing: <span contenteditable="true" id="shCost" class="editable-num">350</span> ₹/kg</div><div>FOB Price: <span contenteditable="true" id="shPrice" class="editable-num">750</span> ₹/kg</div><div><strong style="color:#c57f4a;">Net profit/kg:</strong> <span id="shProfitSpan">400.00</span> ₹</div></div>
             </div>
         </div>
     </div>
 
-    <!-- EXPORT SALES TARGETS -->
+    <!-- Export sales targets (monthly kg) -->
     <div class="card">
-        <div class="card-header"><h2><i class="fas fa-bullseye"></i> Export Sales Targets (Monthly)</h2><span class="badge-premium">Total kg to UAE + KSA → auto revenue & profit</span></div>
+        <div class="card-header"><h2><i class="fas fa-bullseye"></i> Export Sales Targets (monthly)</h2><span class="badge">UAE + KSA combined</span></div>
         <div class="card-body">
-            <table id="salesTable">
-                <thead><tr><th>Product</th><th>Monthly Export (kg)</th><th>Annual Export (kg)</th><th>FOB Price (₹/kg)</th><th>Annual Revenue (₹)</th><th>Profit/kg (₹)</th><th>Annual Profit (₹)</th></tr></thead>
+            <table class="data-table" id="salesTargetTable">
+                <thead><tr><th>Product</th><th>Monthly (kg)</th><th>Annual (kg)</th><th>FOB ₹/kg</th><th>Annual Revenue</th><th>Profit/kg</th><th>Annual Profit</th></tr></thead>
                 <tbody>
-                    <tr><td>Pandarpuri</td><td><span contenteditable="true" class="editable-number" id="ppMonthlyKg">5000</span></td><td id="ppAnnualKg">-</td><td id="ppPriceDisp">836</td><td id="ppAnnualRev">-</td><td id="ppProfitDisp">313.00</td><td id="ppAnnualProfit">-</td></tr>
-                    <tr><td>Shisha Flavors</td><td><span contenteditable="true" class="editable-number" id="shMonthlyKg">4000</span></td><td id="shAnnualKg">-</td><td id="shPriceDisp">750</td><td id="shAnnualRev">-</td><td id="shProfitDisp">400.00</td><td id="shAnnualProfit">-</td></tr>
+                    <tr><td>Pandarpuri</td><td><span contenteditable="true" id="ppMonthlyKg" class="editable-num">5000</span></td><td id="ppAnnualKg">-</td><td id="ppPriceShow">836</td><td id="ppRevenueAnnual">-</td><td id="ppProfitShow">313.00</td><td id="ppProfitAnnual">-</td></tr>
+                    <tr><td>Shisha</td><td><span contenteditable="true" id="shMonthlyKg" class="editable-num">4000</span></td><td id="shAnnualKg">-</td><td id="shPriceShow">750</td><td id="shRevenueAnnual">-</td><td id="shProfitShow">400.00</td><td id="shProfitAnnual">-</td></tr>
                 </tbody>
-                <tfoot><tr class="total-row"><td><strong>Total</strong></td><td><strong id="totalMonthlyKg">0</strong> kg</td><td><strong id="totalAnnualKg">0</strong> kg</td><td>-</td><td><strong id="totalAnnualRevenue">₹0</strong></td><td>-</td><td><strong id="totalAnnualProfitSales">₹0</strong></td></tr></tfoot>
+                <tfoot><tr><td><strong>Total</strong></td><td><strong id="totalMonthlyKg">0</strong> kg</td><td><strong id="totalAnnualKg">0</strong> kg</td><td>-</td><td><strong id="totalRevenue">₹0</strong></td><td>-</td><td><strong id="totalProfitSales">₹0</strong></td></tr></tfoot>
             </table>
         </div>
     </div>
 
-    <!-- INTERNATIONAL OPERATIONS (Corrected: Logistics & Misc in INR) -->
+    <!-- International Ops: UAE + KSA teams & shared logistics (INR) -->
     <div class="card">
-        <div class="card-header"><h2><i class="fas fa-globe"></i> International Operations (UAE & KSA)</h2><span class="badge-premium">Sales teams, visas, cars | Logistics & misc in INR</span></div>
+        <div class="card-header"><h2><i class="fas fa-globe-asia"></i> Overseas teams & logistics</h2><span class="badge">AED / SAR editable</span></div>
         <div class="card-body">
-            <div style="display: flex; flex-wrap: wrap; gap: 30px;">
-                <div style="flex:1; min-width: 280px;"><h3><i class="fas fa-flag-uae"></i> UAE Team</h3>
-                    <table><tr><th>Item</th><th>Value</th></tr>
-                    <tr><td>Monthly Salary per person (AED)</td><td><span contenteditable="true" id="uaeSalaryPer" class="editable-number">5000</span> AED</td></tr>
-                    <tr><td>Number of Sales Persons</td><td><span contenteditable="true" id="uaeCount" class="editable-number">2</span></td></tr>
-                    <tr><td>Total Monthly Salaries (AED)</td><td id="uaeMonthlySalary">-</td></tr>
-                    <tr><td>Visa & Insurance (one-time per person, AED)</td><td><span contenteditable="true" id="uaeVisa" class="editable-number">9000</span> AED</td></tr>
-                    <tr><td>Car Rentals (2 cars × 1800 AED/month)</td><td><span contenteditable="true" id="uaeCarRent" class="editable-number">3600</span> AED/month</td></tr>
-                </table></div>
-                <div style="flex:1; min-width: 280px;"><h3><i class="fas fa-flag-saudi"></i> KSA Team</h3>
-                    <table><tr><th>Item</th><th>Value</th></tr>
-                    <tr><td>Monthly Salary per person (SAR)</td><td><span contenteditable="true" id="ksaSalaryPer" class="editable-number">5000</span> SAR</td></tr>
-                    <tr><td>Number of Sales Persons</td><td><span contenteditable="true" id="ksaCount" class="editable-number">2</span></td></tr>
-                    <tr><td>Total Monthly Salaries (SAR)</td><td id="ksaMonthlySalary">-</td></tr>
-                    <tr><td>Visa & Insurance (one-time per person, SAR)</td><td><span contenteditable="true" id="ksaVisa" class="editable-number">10000</span> SAR</td></tr>
-                    <tr><td>Car Rentals (2 cars × 1800 SAR/month)</td><td><span contenteditable="true" id="ksaCarRent" class="editable-number">3600</span> SAR/month</td></tr>
-                </table></div>
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                <div style="flex:1;"><h3><i class="fas fa-flag-uae"></i> UAE Team</h3>
+                    <table class="data-table"><tr><td>Salary per person (AED)</td><td><span contenteditable="true" id="uaeSalary" class="editable-num">5000</span> AED</td></tr>
+                    <tr><td>Sales persons</td><td><span contenteditable="true" id="uaeCount" class="editable-num">2</span></td></tr>
+                    <tr><td>Total monthly salaries</td><td id="uaeMonthlySalary">-</td></tr>
+                    <tr><td>Visa & insurance (one‑time/person)</td><td><span contenteditable="true" id="uaeVisa" class="editable-num">9000</span> AED</td></tr>
+                    <tr><td>Car rental (2 cars ×1800 AED)</td><td><span contenteditable="true" id="uaeCar" class="editable-num">3600</span> AED/mo</td></tr></table>
+                </div>
+                <div style="flex:1;"><h3><i class="fas fa-flag-saudi"></i> KSA Team</h3>
+                    <table class="data-table"><tr><td>Salary per person (SAR)</td><td><span contenteditable="true" id="ksaSalary" class="editable-num">5000</span> SAR</td></tr>
+                    <tr><td>Sales persons</td><td><span contenteditable="true" id="ksaCount" class="editable-num">2</span></td></tr>
+                    <tr><td>Total monthly salaries</td><td id="ksaMonthlySalary">-</td></tr>
+                    <tr><td>Visa & insurance (one‑time/person)</td><td><span contenteditable="true" id="ksaVisa" class="editable-num">10000</span> SAR</td></tr>
+                    <tr><td>Car rental (2 cars ×1800 SAR)</td><td><span contenteditable="true" id="ksaCar" class="editable-num">3600</span> SAR/mo</td></tr></table>
+                </div>
             </div>
-            <div class="hr-light"></div>
-            <div><h3><i class="fas fa-truck"></i> Shared Logistics & Miscellaneous (INR)</h3>
-                <table style="width:50%; min-width:300px"><tr><th>Item</th><th>Monthly Amount (₹)</th></tr>
-                <tr><td>Logistics (Freight + Customs) Monthly</td><td><span contenteditable="true" id="logisticsINR" class="editable-number">50000</span> ₹</td></tr>
-                <tr><td>Misc Overseas Expenses Monthly</td><td><span contenteditable="true" id="miscINR" class="editable-number">50000</span> ₹</td></tr>
-                </table>
-            </div>
-            <div class="flex-stat" style="margin-top:20px">
-                <div><strong>🇦🇪 UAE Annual Cost (INR):</strong> <span id="uaeAnnualInr" class="stat-number">₹0</span></div>
-                <div><strong>🇸🇦 KSA Annual Cost (INR):</strong> <span id="ksaAnnualInr" class="stat-number">₹0</span></div>
-                <div><strong>📦 Logistics + Misc Annual (INR):</strong> <span id="logisticsMiscAnnual" class="stat-number">₹0</span></div>
-                <div><strong>🌍 Total Overseas Annual OpEx:</strong> <span id="totalOverseasAnnual" class="stat-number" style="background:#c47a44; color:white;">₹0</span></div>
+            <div class="hr-divider"></div>
+            <div><strong><i class="fas fa-truck"></i> Shared costs (INR/month)</strong></div>
+            <table class="data-table" style="width: 60%; min-width: 260px;"><tr><td>Logistics (freight+customs)</td><td><span contenteditable="true" id="logisticsINR" class="editable-num">50000</span> ₹</td></tr>
+            <tr><td>Misc overseas expenses</td><td><span contenteditable="true" id="miscINR" class="editable-num">50000</span> ₹</td></tr></table>
+            <div class="flex-stats" style="margin-top: 1rem;">
+                <div><strong>🇦🇪 UAE annual (INR):</strong> <span id="uaeAnnualInr" class="stat-pill">₹0</span></div>
+                <div><strong>🇸🇦 KSA annual (INR):</strong> <span id="ksaAnnualInr" class="stat-pill">₹0</span></div>
+                <div><strong>📦 Logistics+Misc annual:</strong> <span id="logMiscAnnual" class="stat-pill">₹0</span></div>
+                <div><strong>🌍 Total overseas OpEx:</strong> <span id="totalOverseas" class="stat-pill" style="background:#c57f4a; color:white;">₹0</span></div>
             </div>
         </div>
     </div>
 
-    <!-- PROFIT SUMMARY -->
+    <!-- Profit Summary + Charts -->
     <div class="card">
-        <div class="card-header"><h2><i class="fas fa-chart-line"></i> 1-Year Profit Projection (Net)</h2><span class="badge-premium">Auto-calculated</span></div>
+        <div class="card-header"><h2><i class="fas fa-chart-pie"></i> 1‑Year Profit & Analytics</h2><span class="badge">live</span></div>
         <div class="card-body">
-            <div class="flex-stat"><div class="stat-number" style="background:#2a5a46; color:white;">📊 Gross Export Revenue: <span id="grossRevenue">₹0</span></div><div class="stat-number" style="background:#e2b87a; color:#1e3f33;">💰 Gross Profit (from exports): <span id="grossProfitSales">₹0</span></div></div>
-            <div style="margin:20px 0; background:#f8f3ea; border-radius:24px; padding:20px">
-                <h4>Total Operating Expenses (Annual)</h4>
-                <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:space-between"><div><i class="fas fa-industry"></i> India Mfg Recurring: <strong id="opexIndiaRecur">₹0</strong></div><div><i class="fas fa-building"></i> India One-time Capex: <strong id="opexIndiaCapex">₹0</strong></div><div><i class="fas fa-globe"></i> Overseas OpEx (UAE+KSA+Logistics): <strong id="opexOverseas">₹0</strong></div></div>
-                <div class="hr-light"></div>
-                <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:space-between"><div><strong>Total Expenses (incl. Capex)</strong> <span id="totalExpenses">₹0</span></div><div><strong style="font-size:1.2rem;">📈 Net Profit (After All Expenses):</strong> <span id="netProfit" style="font-size:1.3rem; font-weight:800; color:#c47a44;">₹0</span></div><div><strong>Net Profit Margin:</strong> <span id="netMargin">0%</span></div></div>
+            <div class="flex-stats">
+                <div class="stat-pill" style="background:#2a4b3c; color:white;">📊 Gross Export Revenue: <span id="grossRevenueSpan">₹0</span></div>
+                <div class="stat-pill" style="background:#c57f4a; color:white;">💰 Gross Profit (exports): <span id="grossProfitSpan">₹0</span></div>
             </div>
-            <div class="footer-note">*One-time Capex shown as full expense in Year 1. Edits auto-save locally — share the link to collaborate on same device.</div>
+            <div style="background:#f5efe7; border-radius: 1.5rem; padding: 1.2rem; margin: 1rem 0;">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;">
+                    <div><i class="fas fa-industry"></i> India recurring: <strong id="opexIndiaRecurSpan">₹0</strong></div>
+                    <div><i class="fas fa-hard-hat"></i> India one‑time: <strong id="opexIndiaCapexSpan">₹0</strong></div>
+                    <div><i class="fas fa-globe"></i> Overseas OpEx: <strong id="opexOverseasSpan">₹0</strong></div>
+                </div>
+                <div class="hr-divider"></div>
+                <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: baseline;">
+                    <div><strong>Total expenses (incl. capex)</strong> <span id="totalExpensesSpan">₹0</span></div>
+                    <div><strong style="font-size:1.3rem;">📈 Net Profit after all:</strong> <span id="netProfitSpan" style="font-size:1.4rem; font-weight:800; color:#b45f2c;">₹0</span></div>
+                    <div><strong>Margin:</strong> <span id="netMarginSpan">0%</span></div>
+                </div>
+            </div>
+            <div class="chart-grid">
+                <div class="chart-box"><canvas id="revenueChartCanvas" width="400" height="280"></canvas><p style="text-align:center; margin-top:0.5rem;">Revenue by product</p></div>
+                <div class="chart-box"><canvas id="profitChartCanvas" width="400" height="280"></canvas><p style="text-align:center; margin-top:0.5rem;">Profit by product</p></div>
+            </div>
+            <div class="footer-note">* All numbers are editable — click any value to update charts & totals. Data saved locally.</div>
         </div>
     </div>
-
-    <!-- CHARTS -->
-    <div class="card">
-        <div class="card-header"><h2><i class="fas fa-chart-pie"></i> Revenue & Profit Visuals</h2><span class="badge-premium">Live update</span></div>
-        <div class="card-body"><div class="chart-container"><div class="chart-box"><canvas id="revenueChart" width="400" height="300"></canvas><p style="text-align:center">Revenue by Product</p></div><div class="chart-box"><canvas id="profitChart" width="400" height="300"></canvas><p style="text-align:center">Profit by Product</p></div></div></div>
-    </div>
-
-    <div class="made-by"><i class="fas fa-code"></i> Made by HS | Heritage Tobacco — India → UAE & KSA</div>
-    <div id="saveIndicator" class="save-indicator">✓ Saved</div>
+    <div class="footer-note" style="border-top: none;">Heritage Tobacco — India to UAE/KSA | fully dynamic</div>
+    <div id="toastMsg" class="saved-toast">✓ saved</div>
 </div>
 
 <script>
-    // Helper functions
-    function getNum(id) { return parseFloat(document.getElementById(id)?.innerText.replace(/,/g,'')) || 0; }
-    function getNumFromSpan(span) { return parseFloat(span.innerText.replace(/,/g,'')) || 0; }
+    (function() {
+        // ---------- helpers ----------
+        function getNum(id) { return parseFloat(document.getElementById(id)?.innerText.replace(/,/g,'')) || 0; }
+        function getSpanNum(span) { return parseFloat(span.innerText.replace(/,/g,'')) || 0; }
 
-    // Save all editable fields to localStorage
-    function saveAllToLocal() {
-        const editableFields = document.querySelectorAll('[contenteditable="true"], .editable-number');
-        const data = {};
-        editableFields.forEach(el => { if (el.id) data[el.id] = el.innerText; });
-        localStorage.setItem('heritageTobaccoData', JSON.stringify(data));
-        const indicator = document.getElementById('saveIndicator');
-        indicator.style.opacity = '1';
-        setTimeout(() => { indicator.style.opacity = '0'; }, 1500);
-    }
-
-    function loadFromLocal() {
-        const saved = localStorage.getItem('heritageTobaccoData');
-        if (!saved) return;
-        const data = JSON.parse(saved);
-        for (const [id, value] of Object.entries(data)) {
-            const el = document.getElementById(id);
-            if (el && el.contentEditable === 'true') el.innerText = value;
+        // save to localStorage
+        function persistAll() {
+            const fields = document.querySelectorAll('[contenteditable="true"], .editable-num');
+            const data = {};
+            fields.forEach(el => { if(el.id) data[el.id] = el.innerText; });
+            localStorage.setItem('htobacco_dash', JSON.stringify(data));
+            let toast = document.getElementById('toastMsg');
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 1300);
         }
-    }
 
-    // India operations
-    function updateIndia() {
-        let monthlyRecurring = 0, oneTimeTotal = 0;
-        document.querySelectorAll('[data-india]').forEach(el => { monthlyRecurring += getNumFromSpan(el); });
-        document.querySelectorAll('[data-india-onetime]').forEach(el => { oneTimeTotal += getNumFromSpan(el); });
-        let annualRecurring = monthlyRecurring * 12;
-        document.getElementById('indiaMonthlyRecurring').innerHTML = '₹' + monthlyRecurring.toLocaleString('en-IN');
-        document.getElementById('indiaAnnualRecurring').innerHTML = '₹' + annualRecurring.toLocaleString('en-IN');
-        document.getElementById('indiaOneTimeSum').innerHTML = '₹' + oneTimeTotal.toLocaleString('en-IN');
-        let idx=0; document.querySelectorAll('[data-india]').forEach(el => { let ann = getNumFromSpan(el)*12; document.getElementById(`indiaAnnual${idx++}`).innerHTML = '₹' + ann.toLocaleString('en-IN'); });
-        idx=0; document.querySelectorAll('[data-india-onetime]').forEach(el => { let val = getNumFromSpan(el); document.getElementById(`indiaOT${idx++}`).innerHTML = '₹' + val.toLocaleString('en-IN'); });
-        return { monthlyRecurring, annualRecurring, oneTimeTotal };
-    }
+        function loadPersisted() {
+            const raw = localStorage.getItem('htobacco_dash');
+            if(!raw) return;
+            const data = JSON.parse(raw);
+            for(let id in data) {
+                let el = document.getElementById(id);
+                if(el && el.contentEditable === 'true') el.innerText = data[id];
+            }
+        }
 
-    function updateProducts() {
-        let ppCost = getNum('ppCost'), ppPrice = getNum('ppPrice');
-        let shCost = getNum('shCost'), shPrice = getNum('shPrice');
-        let ppProfit = ppPrice - ppCost, shProfit = shPrice - shCost;
-        document.getElementById('ppProfit').innerText = ppProfit.toFixed(2);
-        document.getElementById('shProfit').innerText = shProfit.toFixed(2);
-        document.getElementById('ppProfitDisp').innerText = ppProfit.toFixed(2);
-        document.getElementById('shProfitDisp').innerText = shProfit.toFixed(2);
-        document.getElementById('ppPriceDisp').innerText = ppPrice;
-        document.getElementById('shPriceDisp').innerText = shPrice;
-        return { ppProfit, shProfit, ppPrice, shPrice };
-    }
+        // update product profit/kg
+        function updateProductProfits() {
+            let ppCost = getNum('ppCost'), ppPrice = getNum('ppPrice');
+            let shCost = getNum('shCost'), shPrice = getNum('shPrice');
+            let ppProfit = ppPrice - ppCost;
+            let shProfit = shPrice - shCost;
+            document.getElementById('ppProfitSpan').innerText = ppProfit.toFixed(2);
+            document.getElementById('shProfitSpan').innerText = shProfit.toFixed(2);
+            document.getElementById('ppProfitShow').innerText = ppProfit.toFixed(2);
+            document.getElementById('shProfitShow').innerText = shProfit.toFixed(2);
+            document.getElementById('ppPriceShow').innerText = ppPrice;
+            document.getElementById('shPriceShow').innerText = shPrice;
+        }
 
-    function updateSales() {
-        let ppKg = getNum('ppMonthlyKg'), shKg = getNum('shMonthlyKg');
-        let ppPrice = getNum('ppPrice'), shPrice = getNum('shPrice');
-        let ppProfitKg = getNum('ppProfit'), shProfitKg = getNum('shProfit');
-        let ppAnnualKg = ppKg * 12, shAnnualKg = shKg * 12;
-        let ppRev = ppAnnualKg * ppPrice, shRev = shAnnualKg * shPrice;
-        let ppProfVal = ppAnnualKg * ppProfitKg, shProfVal = shAnnualKg * shProfitKg;
-        document.getElementById('ppAnnualKg').innerHTML = ppAnnualKg.toLocaleString('en-IN') + ' kg';
-        document.getElementById('shAnnualKg').innerHTML = shAnnualKg.toLocaleString('en-IN') + ' kg';
-        document.getElementById('ppAnnualRev').innerHTML = '₹' + Math.round(ppRev).toLocaleString('en-IN');
-        document.getElementById('shAnnualRev').innerHTML = '₹' + Math.round(shRev).toLocaleString('en-IN');
-        document.getElementById('ppAnnualProfit').innerHTML = '₹' + Math.round(ppProfVal).toLocaleString('en-IN');
-        document.getElementById('shAnnualProfit').innerHTML = '₹' + Math.round(shProfVal).toLocaleString('en-IN');
-        let totalKg = (ppKg + shKg) * 12;
-        document.getElementById('totalMonthlyKg').innerHTML = (ppKg+shKg).toLocaleString('en-IN');
-        document.getElementById('totalAnnualKg').innerHTML = totalKg.toLocaleString('en-IN');
-        document.getElementById('totalAnnualRevenue').innerHTML = '₹' + Math.round(ppRev+shRev).toLocaleString('en-IN');
-        document.getElementById('totalAnnualProfitSales').innerHTML = '₹' + Math.round(ppProfVal+shProfVal).toLocaleString('en-IN');
-        return { totalRevenue: ppRev+shRev, totalProfit: ppProfVal+shProfVal };
-    }
+        // India table: monthly recurring + one-time totals
+        function updateIndia() {
+            let monthlySum = 0;
+            let oneTimeSum = 0;
+            document.querySelectorAll('[data-india]').forEach(el => { monthlySum += getSpanNum(el); });
+            document.querySelectorAll('[data-india-onetime]').forEach(el => { oneTimeSum += getSpanNum(el); });
+            let annualRecur = monthlySum * 12;
+            document.getElementById('indiaMonthlyRecur').innerHTML = '₹' + monthlySum.toLocaleString('en-IN');
+            document.getElementById('indiaAnnualRecur').innerHTML = '₹' + annualRecur.toLocaleString('en-IN');
+            document.getElementById('indiaCapexSum').innerHTML = '₹' + oneTimeSum.toLocaleString('en-IN');
+            // fill annual columns
+            let idx=0;
+            document.querySelectorAll('[data-india]').forEach(el => {
+                let ann = getSpanNum(el)*12;
+                document.getElementById(`indiaAnn${idx++}`).innerHTML = '₹' + ann.toLocaleString('en-IN');
+            });
+            idx=0;
+            document.querySelectorAll('[data-india-onetime]').forEach(el => {
+                let val = getSpanNum(el);
+                document.getElementById(`indiaOt${idx++}`).innerHTML = '₹' + val.toLocaleString('en-IN');
+            });
+            return { monthlySum, annualRecur, oneTimeSum };
+        }
 
-    function updateOverseas() {
-        let aedRate = getNum('aedRate'), sarRate = getNum('sarRate');
-        let uaeCount = getNum('uaeCount'), uaeSalary = getNum('uaeSalaryPer');
-        let uaeMonthlySalaries = uaeSalary * uaeCount;
-        let uaeVisaTotal = getNum('uaeVisa') * uaeCount;
-        let uaeCarMonthly = getNum('uaeCarRent');
-        let uaeMonthlyTotalAed = uaeMonthlySalaries + uaeCarMonthly;
-        let uaeAnnualTotalAed = (uaeMonthlyTotalAed * 12) + uaeVisaTotal;
-        let uaeAnnualInr = uaeAnnualTotalAed * aedRate;
+        // Sales targets & revenue/profit
+        function updateSales() {
+            let ppKg = getNum('ppMonthlyKg'), shKg = getNum('shMonthlyKg');
+            let ppPrice = getNum('ppPrice'), shPrice = getNum('shPrice');
+            let ppProfitKg = getNum('ppProfitSpan'), shProfitKg = getNum('shProfitSpan');
+            let ppAnnualKg = ppKg * 12, shAnnualKg = shKg * 12;
+            let ppRev = ppAnnualKg * ppPrice, shRev = shAnnualKg * shPrice;
+            let ppProf = ppAnnualKg * ppProfitKg, shProf = shAnnualKg * shProfitKg;
+            document.getElementById('ppAnnualKg').innerHTML = ppAnnualKg.toLocaleString('en-IN') + ' kg';
+            document.getElementById('shAnnualKg').innerHTML = shAnnualKg.toLocaleString('en-IN') + ' kg';
+            document.getElementById('ppRevenueAnnual').innerHTML = '₹' + Math.round(ppRev).toLocaleString('en-IN');
+            document.getElementById('shRevenueAnnual').innerHTML = '₹' + Math.round(shRev).toLocaleString('en-IN');
+            document.getElementById('ppProfitAnnual').innerHTML = '₹' + Math.round(ppProf).toLocaleString('en-IN');
+            document.getElementById('shProfitAnnual').innerHTML = '₹' + Math.round(shProf).toLocaleString('en-IN');
+            let totalMonthlyKg = ppKg + shKg;
+            let totalAnnualKg = totalMonthlyKg * 12;
+            let totalRevenue = ppRev + shRev;
+            let totalProfit = ppProf + shProf;
+            document.getElementById('totalMonthlyKg').innerHTML = totalMonthlyKg.toLocaleString('en-IN');
+            document.getElementById('totalAnnualKg').innerHTML = totalAnnualKg.toLocaleString('en-IN');
+            document.getElementById('totalRevenue').innerHTML = '₹' + Math.round(totalRevenue).toLocaleString('en-IN');
+            document.getElementById('totalProfitSales').innerHTML = '₹' + Math.round(totalProfit).toLocaleString('en-IN');
+            return { totalRevenue, totalProfit };
+        }
 
-        let ksaCount = getNum('ksaCount'), ksaSalary = getNum('ksaSalaryPer');
-        let ksaMonthlySalaries = ksaSalary * ksaCount;
-        let ksaVisaTotal = getNum('ksaVisa') * ksaCount;
-        let ksaCarMonthly = getNum('ksaCarRent');
-        let ksaMonthlyTotalSar = ksaMonthlySalaries + ksaCarMonthly;
-        let ksaAnnualTotalSar = (ksaMonthlyTotalSar * 12) + ksaVisaTotal;
-        let ksaAnnualInr = ksaAnnualTotalSar * sarRate;
+        // Overseas costs + shared logistics (INR)
+        function updateOverseas() {
+            let aed = getNum('aedRate'), sar = getNum('sarRate');
+            let uaeCount = getNum('uaeCount'), uaeSal = getNum('uaeSalary');
+            let uaeMonthlySal = uaeSal * uaeCount;
+            let uaeCarMonthly = getNum('uaeCar');
+            let uaeMonthlyTotal = uaeMonthlySal + uaeCarMonthly;
+            let uaeVisas = getNum('uaeVisa') * uaeCount;
+            let uaeAnnualAed = (uaeMonthlyTotal * 12) + uaeVisas;
+            let uaeAnnualInr = uaeAnnualAed * aed;
+            let ksaCount = getNum('ksaCount'), ksaSal = getNum('ksaSalary');
+            let ksaMonthlySal = ksaSal * ksaCount;
+            let ksaCarMonthly = getNum('ksaCar');
+            let ksaMonthlyTotal = ksaMonthlySal + ksaCarMonthly;
+            let ksaVisas = getNum('ksaVisa') * ksaCount;
+            let ksaAnnualSar = (ksaMonthlyTotal * 12) + ksaVisas;
+            let ksaAnnualInr = ksaAnnualSar * sar;
+            let logistics = getNum('logisticsINR') * 12;
+            let misc = getNum('miscINR') * 12;
+            let logMiscAnnual = logistics + misc;
+            let totalOverseas = uaeAnnualInr + ksaAnnualInr + logMiscAnnual;
+            document.getElementById('uaeMonthlySalary').innerHTML = uaeMonthlySal.toLocaleString() + ' AED';
+            document.getElementById('ksaMonthlySalary').innerHTML = ksaMonthlySal.toLocaleString() + ' SAR';
+            document.getElementById('uaeAnnualInr').innerHTML = '₹' + Math.round(uaeAnnualInr).toLocaleString('en-IN');
+            document.getElementById('ksaAnnualInr').innerHTML = '₹' + Math.round(ksaAnnualInr).toLocaleString('en-IN');
+            document.getElementById('logMiscAnnual').innerHTML = '₹' + Math.round(logMiscAnnual).toLocaleString('en-IN');
+            document.getElementById('totalOverseas').innerHTML = '₹' + Math.round(totalOverseas).toLocaleString('en-IN');
+            return totalOverseas;
+        }
 
-        let logisticsINR = getNum('logisticsINR') * 12;
-        let miscINR = getNum('miscINR') * 12;
-        let logisticsMiscAnnual = logisticsINR + miscINR;
+        let revenueChart, profitChart;
+        function renderCharts() {
+            let ppRev = getNum('ppMonthlyKg') * 12 * getNum('ppPrice');
+            let shRev = getNum('shMonthlyKg') * 12 * getNum('shPrice');
+            let ppProf = getNum('ppMonthlyKg') * 12 * getNum('ppProfitSpan');
+            let shProf = getNum('shMonthlyKg') * 12 * getNum('shProfitSpan');
+            if(revenueChart) revenueChart.destroy();
+            if(profitChart) profitChart.destroy();
+            let ctx1 = document.getElementById('revenueChartCanvas').getContext('2d');
+            revenueChart = new Chart(ctx1, {
+                type: 'bar', data: { labels: ['Pandarpuri', 'Shisha'], datasets: [{ label: 'Annual Revenue (₹)', data: [ppRev, shRev], backgroundColor: ['#3f6b58', '#c57f4a'], borderRadius: 10 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
+            });
+            let ctx2 = document.getElementById('profitChartCanvas').getContext('2d');
+            profitChart = new Chart(ctx2, {
+                type: 'pie', data: { labels: ['Pandarpuri Profit', 'Shisha Profit'], datasets: [{ data: [ppProf, shProf], backgroundColor: ['#3f6b58', '#e0a87a'], borderWidth: 0 }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
 
-        document.getElementById('uaeMonthlySalary').innerHTML = uaeMonthlySalaries.toLocaleString() + ' AED';
-        document.getElementById('ksaMonthlySalary').innerHTML = ksaMonthlySalaries.toLocaleString() + ' SAR';
-        document.getElementById('uaeAnnualInr').innerHTML = '₹' + Math.round(uaeAnnualInr).toLocaleString('en-IN');
-        document.getElementById('ksaAnnualInr').innerHTML = '₹' + Math.round(ksaAnnualInr).toLocaleString('en-IN');
-        document.getElementById('logisticsMiscAnnual').innerHTML = '₹' + Math.round(logisticsMiscAnnual).toLocaleString('en-IN');
-        let totalOverseas = uaeAnnualInr + ksaAnnualInr + logisticsMiscAnnual;
-        document.getElementById('totalOverseasAnnual').innerHTML = '₹' + Math.round(totalOverseas).toLocaleString('en-IN');
-        return totalOverseas;
-    }
+        function refreshEverything() {
+            updateProductProfits();
+            let india = updateIndia();
+            let sales = updateSales();
+            let overseasCost = updateOverseas();
+            let totalExpenses = india.annualRecur + india.oneTimeSum + overseasCost;
+            let netProfit = sales.totalProfit - totalExpenses;
+            document.getElementById('grossRevenueSpan').innerHTML = '₹' + Math.round(sales.totalRevenue).toLocaleString('en-IN');
+            document.getElementById('grossProfitSpan').innerHTML = '₹' + Math.round(sales.totalProfit).toLocaleString('en-IN');
+            document.getElementById('opexIndiaRecurSpan').innerHTML = '₹' + Math.round(india.annualRecur).toLocaleString('en-IN');
+            document.getElementById('opexIndiaCapexSpan').innerHTML = '₹' + Math.round(india.oneTimeSum).toLocaleString('en-IN');
+            document.getElementById('opexOverseasSpan').innerHTML = '₹' + Math.round(overseasCost).toLocaleString('en-IN');
+            document.getElementById('totalExpensesSpan').innerHTML = '₹' + Math.round(totalExpenses).toLocaleString('en-IN');
+            document.getElementById('netProfitSpan').innerHTML = '₹' + Math.round(netProfit).toLocaleString('en-IN');
+            let margin = sales.totalRevenue ? (netProfit / sales.totalRevenue * 100) : 0;
+            document.getElementById('netMarginSpan').innerHTML = margin.toFixed(2) + '%';
+            renderCharts();
+            persistAll();
+        }
 
-    let revenueChart, profitChart;
-    function updateProfit() {
-        let { totalRevenue, totalProfit } = updateSales();
-        let { annualRecurring, oneTimeTotal } = updateIndia();
-        let overseas = updateOverseas();
-        let totalExpenses = annualRecurring + oneTimeTotal + overseas;
-        let netProfit = totalProfit - totalExpenses;
-        document.getElementById('grossRevenue').innerHTML = '₹' + Math.round(totalRevenue).toLocaleString('en-IN');
-        document.getElementById('grossProfitSales').innerHTML = '₹' + Math.round(totalProfit).toLocaleString('en-IN');
-        document.getElementById('opexIndiaRecur').innerHTML = '₹' + Math.round(annualRecurring).toLocaleString('en-IN');
-        document.getElementById('opexIndiaCapex').innerHTML = '₹' + Math.round(oneTimeTotal).toLocaleString('en-IN');
-        document.getElementById('opexOverseas').innerHTML = '₹' + Math.round(overseas).toLocaleString('en-IN');
-        document.getElementById('totalExpenses').innerHTML = '₹' + Math.round(totalExpenses).toLocaleString('en-IN');
-        document.getElementById('netProfit').innerHTML = '₹' + Math.round(netProfit).toLocaleString('en-IN');
-        let margin = totalRevenue > 0 ? (netProfit / totalRevenue * 100) : 0;
-        document.getElementById('netMargin').innerHTML = margin.toFixed(2) + '%';
+        // bind events to all editable fields
+        function bindAllEdits() {
+            const selectors = '[contenteditable="true"], .editable-num';
+            document.querySelectorAll(selectors).forEach(el => el.addEventListener('blur', refreshEverything));
+            ['ppMonthlyKg','shMonthlyKg','uaeSalary','uaeCount','uaeVisa','uaeCar','ksaSalary','ksaCount','ksaVisa','ksaCar','logisticsINR','miscINR','aedRate','sarRate','ppCost','ppPrice','shCost','shPrice'].forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.addEventListener('blur', refreshEverything);
+            });
+            document.getElementById('resetIndiaBtn').addEventListener('click', () => {
+                let monthDef = [100000,15000,5000,144000,44000,25000,120000];
+                let otDef = [300000,2500000,3000000,300000];
+                document.querySelectorAll('[data-india]').forEach((el,i) => el.innerText = monthDef[i]);
+                document.querySelectorAll('[data-india-onetime]').forEach((el,i) => el.innerText = otDef[i]);
+                refreshEverything();
+            });
+        }
 
-        let ppKg = getNum('ppMonthlyKg') * 12, shKg = getNum('shMonthlyKg') * 12;
-        let ppPrice = getNum('ppPrice'), shPrice = getNum('shPrice');
-        let ppProfitKg = getNum('ppProfit'), shProfitKg = getNum('shProfit');
-        let ppRev = ppKg * ppPrice, shRev = shKg * shPrice;
-        let ppProf = ppKg * ppProfitKg, shProf = shKg * shProfitKg;
-        if (revenueChart) revenueChart.destroy();
-        if (profitChart) profitChart.destroy();
-        let ctx1 = document.getElementById('revenueChart').getContext('2d');
-        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: ['Pandarpuri', 'Shisha'], datasets: [{ label: 'Annual Revenue (₹)', data: [ppRev, shRev], backgroundColor: ['#2a5a46', '#c47a44'] }] }, options: { responsive: true } });
-        let ctx2 = document.getElementById('profitChart').getContext('2d');
-        profitChart = new Chart(ctx2, { type: 'pie', data: { labels: ['Pandarpuri Profit', 'Shisha Profit'], datasets: [{ data: [ppProf, shProf], backgroundColor: ['#2a5a46', '#e2b87a'] }] }, options: { responsive: true } });
-    }
-
-    function refreshAll() { updateProducts(); updateIndia(); updateSales(); updateOverseas(); updateProfit(); saveAllToLocal(); }
-    function bindEvents() {
-        document.querySelectorAll('[contenteditable="true"], .editable-number').forEach(el => el.addEventListener('blur', refreshAll));
-        ['aedRate','sarRate','ppMonthlyKg','shMonthlyKg','uaeSalaryPer','uaeCount','uaeVisa','uaeCarRent','ksaSalaryPer','ksaCount','ksaVisa','ksaCarRent','logisticsINR','miscINR'].forEach(id => { let el = document.getElementById(id); if(el) el.addEventListener('blur', refreshAll); });
-    }
-
-    document.getElementById('resetIndiaBtn')?.addEventListener('click', () => {
-        let defaults = [100000,15000,5000,144000,44000,25000,120000];
-        let onedefaults = [300000,2500000,3000000,300000];
-        document.querySelectorAll('[data-india]').forEach((el,i) => el.innerText = defaults[i]);
-        document.querySelectorAll('[data-india-onetime]').forEach((el,i) => el.innerText = onedefaults[i]);
-        refreshAll();
-    });
-
-    loadFromLocal();
-    bindEvents();
-    refreshAll();
+        loadPersisted();
+        bindAllEdits();
+        refreshEverything();
+    })();
 </script>
 </body>
 </html>
